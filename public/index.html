@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SolarCraft Battery Leads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header class="bar"><div class="in">
+  <a class="brand" href="#dashboard">SolarCraft <span>Battery Leads</span></a>
+  <nav class="nav" id="nav" hidden>
+    <a href="#dashboard" data-nav="dashboard">Dashboard</a>
+    <a href="#new" class="btn small" data-nav="new">New call</a>
+    <button type="button" class="link" id="signOut">Sign out</button>
+  </nav>
+</div></header>
+
+<main id="app" class="wrap"><p class="muted">Loading…</p></main>
+
+<template id="tpl-login">
+  <section class="login panel">
+    <h1>Staff sign in</h1>
+    <p class="muted">Battery leads, call intake and proposals.</p>
+    <form id="loginForm">
+      <label class="f">Password<input type="password" id="pw" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="err" id="loginErr" role="alert"></p>
+    </form>
+  </section>
+</template>
+
+<template id="tpl-dashboard">
+  <section class="dash">
+    <div class="kpis">
+      <article class="panel kpi-stages">
+        <h2>Leads by stage</h2>
+        <div class="stages" id="stageBars"></div>
+      </article>
+      <article class="panel">
+        <h2>Follow-ups due <span class="count" id="fuCount">0</span></h2>
+        <ul class="fu" id="followUps"></ul>
+      </article>
+      <article class="panel">
+        <h2>Systems and value</h2>
+        <div class="sv" id="systems"></div>
+      </article>
+      <article class="panel">
+        <h2>Results by rep</h2>
+        <div class="tablewrap"><table class="reps" id="reps"></table></div>
+      </article>
+    </div>
+    <article class="panel leads">
+      <div class="leadhead">
+        <h2>All leads</h2>
+        <input type="search" id="search" placeholder="Search name or address" aria-label="Search leads">
+      </div>
+      <div class="chips" id="stageFilter" role="group" aria-label="Filter by stage"></div>
+      <div class="tablewrap"><table class="list" id="leadTable"></table></div>
+    </article>
+  </section>
+</template>
+
+<template id="tpl-call">
+  <section class="callview">
+    <a href="#dashboard" class="back">← All leads</a>
+    <div class="callgrid">
+      <form class="panel form" id="form" novalidate>
+        <div class="formhead"><h1 id="formTitle">New call</h1></div>
+
+        <details class="rep" id="repBox">
+          <summary>Rep and proposal details</summary>
+          <div class="body">
+            <label class="f">Rep name<input type="text" id="rep_name" autocomplete="name"></label>
+            <label class="f">Rep email<input type="email" id="rep_email"></label>
+            <label class="f">Rep phone<input type="tel" id="rep_phone"></label>
+            <label class="f">HIS #<input type="text" id="rep_his"></label>
+            <label class="f">Proposal type<select id="proposal_type"><option>Battery Only</option><option>Solar + Battery</option></select></label>
+            <label class="f">Call date<input type="text" id="date"></label>
+          </div>
+        </details>
+
+        <section class="q"><div class="n">1</div><div class="t">Name, phone, email and installation address</div>
+          <div class="body">
+            <label class="f">Customer name<input type="text" id="name" required></label>
+            <label class="f">Mobile phone<input type="tel" id="phone"></label>
+            <label class="f">Email<input type="email" id="email"></label>
+            <label class="f full">Installation address<input type="text" id="address" placeholder="Street, City, CA ZIP"></label>
+          </div></section>
+
+        <section class="q"><div class="n">2</div><div class="t">Do you have solar? Own or lease? Brand? Microinverters (such as Enphase)?</div>
+          <div class="body">
+            <div><div class="seg">Has solar</div><div class="chips" data-radio="has_solar"></div></div>
+            <div><div class="seg">Ownership</div><div class="chips" data-radio="ownership"></div></div>
+            <label class="f">Brand, if known<input type="text" id="solar_brand"></label>
+            <div><div class="seg">Microinverters</div><div class="chips" data-radio="microinverters"></div></div>
+          </div></section>
+
+        <section class="q"><div class="n">3</div><div class="t">What matters most: backup power, lower bills, or both?</div>
+          <div class="body"><div class="chips full" data-radio="priority"></div></div></section>
+
+        <section class="q"><div class="n">4</div><div class="t">In an outage, keep essentials running or the whole home?</div>
+          <div class="body"><div class="chips full" data-radio="backup_level"></div></div></section>
+
+        <section class="q"><div class="n">5</div><div class="t">Which large appliances must stay on? <span class="hint">Tap all that apply.</span></div>
+          <div class="body"><div class="chips full" data-check="must_run"></div></div></section>
+
+        <section class="q"><div class="n">6</div><div class="t">Medical equipment, electric gates, garage doors or locks?</div>
+          <div class="body"><div class="chips full" data-check="life_safety"></div></div></section>
+
+        <section class="q"><div class="n">7</div><div class="t">Can you send a recent PG&amp;E bill?</div>
+          <div class="body"><div class="upload full" data-kind="bill">
+            <label class="chip"><input type="checkbox" id="bill_received"><span>Bill received</span></label>
+            <label class="filebtn">Attach bill<input type="file" accept="image/*,application/pdf" data-upload="bill"></label>
+            <span class="fileinfo" data-file="bill"></span>
+          </div></div></section>
+
+        <section class="q"><div class="n">8</div><div class="t">Photo of the main panel, door open, gas meter in view if nearby</div>
+          <div class="body"><div class="upload full" data-kind="panel">
+            <label class="chip"><input type="checkbox" id="panel_photo_received"><span>Photo received</span></label>
+            <label class="filebtn">Attach photo<input type="file" accept="image/*,application/pdf" data-upload="panel"></label>
+            <span class="fileinfo" data-file="panel"></span>
+          </div></div></section>
+
+        <section class="q"><div class="n">9</div><div class="t">Plans for an EV, heat pump, more solar or a remodel?</div>
+          <div class="body"><div class="chips full" data-check="future_plans"></div></div></section>
+
+        <section class="q"><div class="n">10</div><div class="t">Budget and timing? Cash or finance?</div>
+          <div class="body">
+            <label class="f">Budget and timing<input type="text" id="budget_timing" placeholder="e.g. under $25k, this spring"></label>
+            <div><div class="seg">Payment</div><div class="chips" data-radio="payment"></div></div>
+            <label class="f full">Notes<textarea id="notes"></textarea></label>
+          </div></section>
+
+        <div class="foot">
+          <span class="status" id="saveStatus" role="status"></span>
+          <button class="btn" type="submit" id="saveBtn">Save call</button>
+        </div>
+      </form>
+
+      <aside class="side" id="side">
+        <div class="panel">
+          <h2>Stage</h2>
+          <select id="stage" aria-label="Stage"></select>
+          <ol class="history" id="history"></ol>
+        </div>
+        <div class="panel">
+          <h2>Recommendation</h2>
+          <div id="rec"><p class="muted">Save the call to see the recommended system.</p></div>
+          <details class="override" id="overrideBox">
+            <summary>Change the recommendation</summary>
+            <label class="f">System<select id="ov_primary"><option value="">Use the rules</option><option value="enphase">Enphase</option><option value="powerwall">Powerwall 3</option></select></label>
+            <label class="f">Enphase size<select id="ov_enphase"><option value="">Use the rules</option><option value="20">20 kWh</option><option value="30">30 kWh</option></select></label>
+            <label class="f">Powerwall size<select id="ov_powerwall"><option value="">Use the rules</option><option value="13.5">13.5 kWh</option><option value="27">27 kWh</option><option value="40.5">40.5 kWh</option></select></label>
+            <p class="muted small">Press Save call to apply.</p>
+          </details>
+        </div>
+        <div class="panel">
+          <h2>Proposal</h2>
+          <div id="proposalBox"></div>
+          <button class="btn wide" type="button" id="makeBtn">Make proposal</button>
+        </div>
+        <button class="link danger" type="button" id="deleteBtn" hidden>Delete this lead</button>
+        <div class="confirm" id="confirmDelete" hidden>
+          <p>Delete this lead, its files and its proposal? This can't be undone.</p>
+          <button class="btn danger" type="button" id="confirmYes">Delete</button>
+          <button class="btn ghost" type="button" id="confirmNo">Keep</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+</template>
+
+<script src="/app.js"></script>
+</body>
+</html>
